@@ -15,24 +15,26 @@ public class UsuarioController {
     }
 
     @PostMapping
-    public Usuario cadastrar(@RequestBody Usuario usuario) {
-        return usuarioService.salvar(usuario);
+    public Usuario criarUsuario(@RequestBody Usuario usuario) {
+        return usuarioService.criarUsuario(usuario);
     }
 
-    @GetMapping("/{id}/dividas")
-    public double consultarDividas(@PathVariable Long id) {
-        Usuario usuario = usuarioService.buscarPorId(id)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+    @GetMapping("/{id}")
+    public Usuario buscarUsuario(@PathVariable Long id) {
+        return usuarioService.buscarUsuario(id);
+    }
 
+    @PutMapping("/{id}/divida")
+    public Usuario atualizarDivida(
+            @PathVariable Long id,
+            @RequestParam double valor
+    ) {
+        return usuarioService.atualizarDivida(id, valor);
+    }
+
+    @GetMapping("/{id}/divida")
+    public double consultarDivida(@PathVariable Long id) {
+        Usuario usuario = usuarioService.buscarUsuario(id);
         return usuario.getDividaTotal();
-    }
-
-    @PostMapping("/{id}/quitar")
-    public String quitar(@PathVariable Long id) {
-        Usuario usuario = usuarioService.buscarPorId(id)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
-
-        usuarioService.quitarDividas(usuario);
-        return "Dívidas quitadas com sucesso!";
     }
 }

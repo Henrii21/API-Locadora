@@ -4,8 +4,6 @@ import com.locadora.api.model.Usuario;
 import com.locadora.api.repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-
 @Service
 public class UsuarioService {
 
@@ -15,25 +13,25 @@ public class UsuarioService {
         this.usuarioRepository = usuarioRepository;
     }
 
-    public Usuario salvar(Usuario usuario) {
+    public Usuario criarUsuario(Usuario usuario) {
+        // dividaTotal já é double, nunca vem null
+        if (usuario.getDividaTotal() < 0) {
+            usuario.setDividaTotal(0.0);
+        }
         return usuarioRepository.save(usuario);
     }
 
-    public Optional<Usuario> buscarPorId(Long id) {
-        return usuarioRepository.findById(id);
+    public Usuario buscarUsuario(Long id) {
+        return usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
     }
 
-    public boolean usuarioTemDividas(Usuario usuario) {
-        return usuario.getDividaTotal() > 0;
-    }
+    public Usuario atualizarDivida(Long usuarioId, double valor) {
+        Usuario usuario = buscarUsuario(usuarioId);
 
-    public void adicionarDivida(Usuario usuario, double valor) {
-        usuario.setDividaTotal(usuario.getDividaTotal() + valor);
-        usuarioRepository.save(usuario);
-    }
+        double novaDivida = usuario.getDividaTotal() + valor;
+        usuario.setDividaTotal(novaDivida);
 
-    public void quitarDividas(Usuario usuario) {
-        usuario.setDividaTotal(0);
-        usuarioRepository.save(usuario);
+        return usuarioRepository.save(usuario);
     }
 }

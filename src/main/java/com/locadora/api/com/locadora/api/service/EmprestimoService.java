@@ -20,8 +20,8 @@ public class EmprestimoService {
     private final UsuarioRepository usuarioRepository;
     private final ItemRepository itemRepository;
 
-    private final int DIAS_EMPRESTIMO = 7;       // duração padrão
-    private final double MULTA_DIARIA = 2.0;     // valor definido pelo professor
+    private final int DIAS_EMPRESTIMO = 7;
+    private final double MULTA_DIARIA = 2.0;
 
     public EmprestimoService(EmprestimoRepository emprestimoRepository,
                              UsuarioRepository usuarioRepository,
@@ -87,20 +87,25 @@ public class EmprestimoService {
         return emprestimoRepository.save(emprestimo);
     }
 
-    public Emprestimo devolver(Long emprestimoId) {
+    public Emprestimo devolver(Long emprestimoId, String dataDevolucaoStr) {
         Emprestimo emprestimo = buscarPorId(emprestimoId)
                 .orElseThrow(() -> new RuntimeException("Empréstimo não encontrado"));
 
         if (emprestimo.isFinalizado())
             throw new RuntimeException("Este empréstimo já foi finalizado.");
 
-        emprestimo.setDataDevolucao(LocalDate.now());
+        // Se for enviada uma data, usa ela. Caso contrário, usa a data atual.
+        LocalDate dataDevolucao = (dataDevolucaoStr != null)
+                ? LocalDate.parse(dataDevolucaoStr)
+                : LocalDate.now();
+
+        emprestimo.setDataDevolucao(dataDevolucao);
         emprestimo.setFinalizado(true);
 
         long atraso = Math.max(0,
                 ChronoUnit.DAYS.between(
                         emprestimo.getDataPrevistaDevolucao(),
-                        emprestimo.getDataDevolucao()
+                        dataDevolucao
                 )
         );
 
